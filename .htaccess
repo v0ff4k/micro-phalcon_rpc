@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteRule   ^$ site/    [L]
+    RewriteRule   ((?s).*) site/$1 [L]
+</IfModule>

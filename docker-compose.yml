@@ -1,0 +1,26 @@
+version: "3.1"
+services:
+
+    users:
+      image: nouchka/sqlite3:latest
+      stdin_open: true
+      tty: true
+      volumes:
+        - ./db/:/tmp/db/
+      env_file:
+        - variables.env
+
+    site:
+      container_name: phalcon-server
+      build: docker/site
+      restart: always
+      ports:
+        - "80:80"
+      volumes:
+        - ./phpconfig:/usr/local/etc/php
+        - ./application:/var/www/html
+      depends_on:
+        - users
+
+      
+
