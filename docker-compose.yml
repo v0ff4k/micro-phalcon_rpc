@@ -3,6 +3,9 @@ services:
 
     users:
       image: nouchka/sqlite3:latest
+      expose: #only inside container
+          - "8080"
+          - "3306"
       stdin_open: true
       tty: true
       volumes:
@@ -14,7 +17,7 @@ services:
       container_name: phalcon-server
       build: docker/site
       restart: always
-      ports:
+      ports: #opened to the world
         - "80:80"
       volumes:
         - ./phpconfig:/usr/local/etc/php
