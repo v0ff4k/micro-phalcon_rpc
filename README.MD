@@ -58,8 +58,8 @@ phalcon commands help
 
 #optional - end
 
-git clone https://github.com/v0ff4k/mircro-phalcon_rpc.git
-cd mircro-phalcon_rpc
+git clone https://github.com/v0ff4k/micro-phalcon_rpc.git
+cd micro-phalcon_rpc
 docker-compose up
 
 # Check your localhost OR 127.0.0.1 in browser. Profit!
