@@ -1,29 +1,51 @@
 version: "3.1"
 services:
 
-    users:
+    users: # can be accessed via:: (NO -external)|[users:8080]|[nouchka/sqlite3://users:8080]
+      build: ./docker/users
       image: nouchka/sqlite3:latest
+      #image: sqlite3
       expose: #only inside container
-          - "8080"
           - "3306"
+      restart: always
       stdin_open: true
       tty: true
+      #todo maybe not needed volumes for db !&
       volumes:
         - ./db/:/tmp/db/
+        - ./users:/var/www/users
       env_file:
         - variables.env
-
-    site:
-      container_name: phalcon-server
-      build: docker/site
-      restart: always
-      ports: #opened to the world
-        - "80:80"
-      volumes:
-        - ./phpconfig:/usr/local/etc/php
-        - ./application:/var/www/html
       depends_on:
-        - users
+        - phpfpm
 
-      
+    site: # can be accessed via:: (0.0.0.0:8888 -external)|[site:80]|[adminer://site:80]
+      build: ./docker/site
+      image: phalconphp/phpfpm-fpm
+      restart: always
+#      ports: #opened to the world
+#        - "8080:80"
+      volumes:
+        - ./site:/var/www/site
+        - ./phpconfig:/usr/local/etc/phpfpm
+      depends_on:
+        - phpfpm
 
+
+    phpfpm:
+        image: phalconphp/phpfpm-fpm
+        restart: always
+        working_dir: /var/www
+        ports:
+            - "8081:80"
+        volumes:
+            - ./site:/var/www/site
+            - ./users:/var/www/users
+#            - ./conf/phpfpm/fpm.ini://etc/phpfpm/7.0/fpm/phpfpm.ini
+        depends_on:
+            - users
+
+
+volumes:
+  users:
+    777driver: local

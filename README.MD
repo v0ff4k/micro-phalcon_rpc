@@ -55,7 +55,6 @@ ln -s $(pwd)/phalcon /usr/bin/phalcon
 chmod ugo+x /usr/bin/phalcon
 phalcon commands help
 
-
 #optional - end
 
 git clone https://github.com/v0ff4k/micro-phalcon_rpc.git
@@ -64,3 +63,18 @@ docker-compose up
 
 # Check your localhost OR 127.0.0.1 in browser. Profit!
 
+### synh your databases with  migration files
+phalcon gen-migration
+
+#for others flags see:
+phalcon gen-migration --help
+
+# show  network status
+docker network ls
+
+# and opened ports
+netstat -aop TCP | grep /docker-
+
+# show processes in the docker
+docker ps
+docker stop|start process
