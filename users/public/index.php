@@ -1,96 +1,77 @@
 <?php
 
-namespace AppUsers;
+use Phalcon\Di\FactoryDefault;
+use Phalcon\Mvc\Micro;
 
-use helpers\ResponseJson;
-use \Phalcon\Mvc\Micro;
-use \Phalcon\DI\FactoryDefault;
-use \Phalcon\Loader;
+date_default_timezone_set('Asia/Bishkek');
 
+define('APP_ENV', getenv('APP_ENV') ?: 'dev');
+
+if (APP_ENV === 'dev') {
+    ini_set('display_errors', 'On');
+    error_reporting(E_ALL);
+}
 
 try {
 
-    //1 Initialize Dependency Injection
+    require dirname(__DIR__).'/vendor/autoload.php';
+
+    /**
+     * Get config service for use in inline setup below
+     */
+    $config = include __DIR__.'/../app/config/config.php';
+
+    /**
+     * Include Autoloader.
+     */
+    include APP_PATH . '/config/loader.php';
+
     $di = new FactoryDefault();
 
-//    $di->set(
-//        'config',
-//        function () {
-//            return new Ini('config.ini');
-//        }
-//    );
+    /**
+     * Include Services.
+     */
+    include APP_PATH . '/config/services.php';
 
-    //2 use Loader  as register Directories
-    $loader = new Loader();
+    /*
+     * Starting the application
+     * Assign service locator to the application
+     */
+//    $app = new Micro(); $app->setDI($di);
+    $app = new Micro($di);
 
-    $loader->registerDirs([
-            __DIR__ . '/library/',
-            __DIR__ . '/models/'
-        ]
-    )->register();
+    /**
+     * Include routes.
+     */
+    include APP_PATH . '/config/routes.php';
 
-    //3 Use composer autoloader to load vendor classes
-    require_once __DIR__ . '../vendor/autoload.php';
+    /**
+     * Init the Session
+     */
+    $app->session->start();
 
-    //4 Initialize DB  replace with build in  config get from variables.env file !!!!
-    include_once(__DIR__ . '/config/database.php');
-
-    //5 Start Micro() as the app
-    $app = new Micro();
-
-    $app->post(
-        '/login',
-        function () use ($app) {
-
-            //$user = $app['db']->query('SELECT id FROM users WHERE login=:login AND password=:password');
-            return (isset($user) ? 1 : 0);
-        }
-    );
-
-
-// Not Found
-    $app->notFound(function () use ($app) {
-
-        $app->response->setStatusCode(404, 'Not Found');
-        $app->response->sendHeaders();
-
-        $message = 'Nothing to see here. Move along....';
-        $app->response->setContent($message);
-        $app->response->send();
-    });
-
-// Default Response
-    $app->get('/', function () {
-        return 'API is ready!';
-    });
-
-//Add any filter before running the route
-    $app->before(function () use ($app) {
-        //You may want to add some basic auth in order to access the REST API
-    });
-
-//This is executed after running the route
-    $app->after(function () use ($app) {
-
-    });
-
-
-//needed ???
+    /**
+     * Handle the whole request
+     */
     $app->handle();
 
+} catch (Error | Exception $e) {
 
+    (new \app\plugins\Logger())
+        ->error(
+            $e->getMessage() . PHP_EOL . ' [Stack Trace:]' . PHP_EOL . $e->getTraceAsString()
+        );
 
-} catch (\Exception $e) {
+    if (APP_ENV === 'dev') {
+       $content = sprintf(
+            "message: %s, \n stacktrace: %s ",
+            $e->getMessage(),
+            $e->getTraceAsString()
+       );
+    } else {
+        $content = 'There was an error processing your request';
+    }
 
-    return ResponseJson::getJson(0, 'There was an error processing your request', $e->getMessage(), 400);
+    \app\plugins\ResponseJson::returnJsonRpcResponse($content, true, -32603, 1, 500);
+    die;
 }
-
-
-function jsonResponce()
-{
-
-}
-
-
-
-
