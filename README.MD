@@ -60,6 +60,8 @@ phalcon commands help
 git clone https://github.com/v0ff4k/micro-phalcon_rpc.git
 cd micro-phalcon_rpc
 docker-compose up
+## or rebuild  older failed container
+docker-compose -f docker-compose.yml up -d --build
 
 # Check your localhost OR 127.0.0.1 in browser. Profit!
 
@@ -77,4 +79,15 @@ netstat -aop TCP | grep /docker-
 
 # show processes in the docker
 docker ps
-docker stop|start process
+docker stop|start|restart|kill processId
+
+# list and remove some useless  PROCESS  in docker 
+docker ps -a
+docker rm processId anotherProcId
+
+# list and remove some useless  IMAGE  in docker
+docker images
+docker rmi imageId anotherImgId
+
+### others
+`` https://webhamster.ru/mytetrashare/index/mtb192/15159984130x47p7lgyi ``
