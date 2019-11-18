@@ -1,74 +1,83 @@
 <?php
 
+use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Micro;
 
+date_default_timezone_set('Asia/Bishkek');
 
-function loginForm () {
+define('APP_ENV', getenv('APP_ENV') ?: 'dev');
 
-    echo "<h1>Insert your correct credentials!</h1><hr noshade />";
-    echo "<form method='post'>
-<input type='text' />&nbsp;<input type='password' />&nbsp;<input type='submit' />
-</form>";
-
+if (APP_ENV === 'dev') {
+    ini_set('display_errors', 'On');
+    error_reporting(E_ALL);
 }
-
 
 try {
 
-    require_once __DIR__ . '../vendor/autoload.php';
+    require dirname(__DIR__).'/vendor/autoload.php';
 
-    $app = new Micro();
+    /**
+     * Get config service for use in inline setup below
+     */
+    $config = include __DIR__.'/../app/config/config.php';
 
-    // GET  /  route for display welcome screen + links
-    $app->get(
-        "/",
-        function () use ($app) {
-            //gen link from name
-            $loginUrl = $app->url->get(['for' => 'login-post']);
+    /**
+     * Include Autoloader.
+     */
+    include APP_PATH . '/config/loader.php';
 
-            //display welcome site
-            echo "<h1>welcome !</h1>you can <a href='".$loginUrl."'>login here</a>";
-        }
-    );
+    $di = new FactoryDefault();
 
-    // GET  /login  route for display form
-    $app->get("/login", 'loginForm');
+    /**
+     * Include Services.
+     */
+    include APP_PATH . '/config/services.php';
 
-    // POST  /login  route
-    $app->post(
-        "/login",
-        function () use ($app) {
+    /*
+     * Starting the application
+     * Assign service locator to the application
+     */
+//    $app = new Micro(); $app->setDI($di);
+    $app = new Micro($di);
 
-            //send request to user/index.phpfpm  find user and return success
+    /**
+     * Include routes.
+     */
+    include APP_PATH . '/config/routes.php';
 
-            //exchange with  json-rpcrpc
-            echo "<h1>Successful auth!</h1>";
-        }
-    )->setName('login-post')
-    ;
+    /**
+     * Init the Session
+     */
+    $app->session->start();
 
-    // GET  /logout  route
-    $app->get('/logout',
-        function () use ($app) {
-            $app->response->redirect('/');
-            $app->response->sendHeaders();
-        }
-    );
-
-
-    $app->notFound(
-        function () use ($app) {
-            $app->response->setStatusCode(404, "Not Found");
-            $app->response->sendHeaders();
-            echo "This page was not found!";
-        }
-    );
-
+    /**
+     * Handle the whole request
+     */
     $app->handle();
 
+} catch (Error | Exception $e) {
 
+    (new \app\plugins\Logger())
+        ->error(
+            $e->getMessage() . PHP_EOL . '[Stack Trace]' . PHP_EOL . $e->getTraceAsString()
+        );
 
-} catch (\Exception $e) {
+    $response = new Phalcon\Http\Response();
 
-    return ResponseJson::getJson(0, 'There was an error processing your request', $e->getMessage(), 400);
+    if (APP_ENV === 'dev') {
+       $content = sprintf(
+            "message: %s, \n stacktrace: %s ",
+            $e->getMessage(),
+            $e->getTraceAsString()
+       );
+    } else {
+        $content = 'There was an error processing your request';
+    }
+
+    $response->setContent(nl2br(htmlentities($content)));
+    $response->setStatusCode(500);
+    $response->sendHeaders();
+    if (true !== $response->isSent()) {
+        $response->send();
+    }
 }

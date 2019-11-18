@@ -1,0 +1,42 @@
+{
+    "name": "vladimir/micro_phalcon-start_site",
+    "description": "My start with Phalcon + Docker. Micro 'site|users' speaking by json-rpc as MiddleWare",
+    "version" : "0.4.25",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "app\\": "app",
+            "App\\": "app",
+            "AppSite\\": "app"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": { "app\\test\\": "tests" }
+    },
+    "require": {
+        "php": ">=7.1",
+        "ext-phalcon": "~3.4",
+        "phalcon/incubator": "^3.4",
+        "vlucas/phpdotenv": "^2.4"
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=PSR2"
+    },
+    "license": "proprietary",
+    "authors": [{"name": "Vladimir Che", "email": "v0ff@bk.ru"}],
+    "minimum-stability": "beta",
+    "require-dev": {
+        "phpunit/phpunit": "^7.5",
+        "symfony/var-dumper": "^3.4",
+        "phalcon/devtools": "^3.4",
+        "phalcon/ide-stubs": "^3.4",
+        "phalcon/dd": "^1.1"
+    },
+    "config": {
+        "platform": {
+            "php": "7.1"
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

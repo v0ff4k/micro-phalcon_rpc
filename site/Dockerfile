@@ -1,69 +1,40 @@
-FROM php:7.1-apache
+FROM php:7.2-fpm
+####Dockerfile must start exactly:   "FROM bla-bla:alpine"
 
-# install the PHP extensions we need
-RUN set -ex; \
-    \
-    savedAptMark="$(apt-mark showmanual)"; \
-    \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        libjpeg-dev \
-        libpng-dev \
-    ; \
-    \
-    docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
-    docker-php-ext-install gd zip; \
-    \
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-    apt-mark auto '.*' > /dev/null; \
-    apt-mark manual $savedAptMark; \
-    ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-        | awk '/=>/ { print $3 }' \
-        | sort -u \
-        | xargs -r dpkg-query -S \
-        | cut -d: -f1 \
-        | sort -u \
-        | xargs -rt apt-mark manual; \
-    \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-    rm -rf /var/lib/apt/lists/*
+ENV PHP_VER=7.2 \
+    PHALCON_VERSION=3.4.4 \
+    PHALCON_EXT_PATH=php7/64bits \
+    TZ=Asia/Bishkek
 
-RUN a2enmod rewrite expires
-RUN apt-get update && apt-get install -y \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libmcrypt-dev \
-        libpng-dev \
-    && docker-php-ext-install -j$(nproc) iconv \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd mysqli pdo pdo_mysql
+RUN apt update && apt install -y \
+    curl \
+    zip
 
-RUN apt-get install -y libgmp-dev && docker-php-ext-configure gmp && docker-php-ext-install gmp bcmath
-
-#phalcon
-ARG PHALCON_VERSION=3.4.4
-ARG PHALCON_EXT_PATH=php7/64bits
+# Phalcon install
 RUN set -xe && \
+        cd /tmp && \
         # Compile Phalcon
         curl -LO https://github.com/phalcon/cphalcon/archive/v${PHALCON_VERSION}.tar.gz && \
-        tar xzf ${PWD}/v${PHALCON_VERSION}.tar.gz && \
-        docker-php-ext-install -j $(getconf _NPROCESSORS_ONLN) ${PWD}/cphalcon-${PHALCON_VERSION}/build/${PHALCON_EXT_PATH} && \
+        tar xzf /tmp/v${PHALCON_VERSION}.tar.gz && \
+        docker-php-ext-install -j $(getconf _NPROCESSORS_ONLN) /tmp/cphalcon-${PHALCON_VERSION}/build/${PHALCON_EXT_PATH} && \
         # Remove all temp files
         rm -r \
-            ${PWD}/v${PHALCON_VERSION}.tar.gz \
-            ${PWD}/cphalcon-${PHALCON_VERSION}
+            /tmp/v${PHALCON_VERSION}.tar.gz \
+            /tmp/cphalcon-${PHALCON_VERSION}
 
-#COPY docker-phalcon-* /usr/local/bin/
-RUN docker-php-ext-install pcntl
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# Timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-VOLUME /var/www/html
-WORKDIR /var/www/html
+# Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-ADD . ./
+#RUN service php${PHP_VER}-fpm-sp restart
 
-RUN php composer.phar install --no-dev
+# Default stuff
+ADD run.sh /run.sh
 
-ENTRYPOINT ["site-entry.sh"]
-CMD ["apache2-foreground"]
+RUN chmod 755 /run.sh
+
+WORKDIR "/var/www/html"
+
+CMD ["/run.sh"]
