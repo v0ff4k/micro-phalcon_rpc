@@ -1,51 +1,62 @@
 version: "3.1"
 services:
 
-    users: # can be accessed via:: (NO -external)|[users:8080]|[nouchka/sqlite3://users:8080]
-      build: ./docker/users
-      image: nouchka/sqlite3:latest
-      #image: sqlite3
-      expose: #only inside container
-          - "3306"
+    users: # can be accessed via:: (NO -external)|[users:8000]
+      container_name: ${DB_CONTAINER}
+      environment:
+        TALK_WITH: ${WEB_CONTAINER}
+        CONTAINER: ${DB_CONTAINER}
+        DB_TYPE: ${DB_TYPE}
+        DB_NAME: ${DB_NAME}
+        DEV_ENV: ${APP_ENV}
+      build: ./users
+      image: nginx:alpine
       restart: always
       stdin_open: true
       tty: true
-      #todo maybe not needed volumes for db !&
+      expose: #accessed only for docker containers
+        - "80"
       volumes:
         - ./db/:/tmp/db/
-        - ./users:/var/www/users
+        - .env:/var/www/html/.env
+        - ./users:/var/www/html
+        - ./users/nginx-users.conf:/etc/nginx/conf.d/default.conf
       env_file:
-        - variables.env
-      depends_on:
-        - phpfpm
+        - .env
+#      depends_on:
+#        - phpfpm
 
-    site: # can be accessed via:: (0.0.0.0:8888 -external)|[site:80]|[adminer://site:80]
-      build: ./docker/site
-      image: phalconphp/phpfpm-fpm
+    site: # can be accessed via:: (0.0.0.0:8000 -world)|[site:80 -internal,container]
+      container_name: ${WEB_CONTAINER}
+      environment:
+        TALK_WITH: ${DB_CONTAINER}
+        CONTAINER: ${WEB_CONTAINER}
+        DEV_ENV: ${APP_ENV}
+      build: ./site
+      image: nginx:alpine
       restart: always
-#      ports: #opened to the world
-#        - "8080:80"
+      ports: # world:container
+        - "8000:80"
       volumes:
-        - ./site:/var/www/site
-        - ./phpconfig:/usr/local/etc/phpfpm
-      depends_on:
-        - phpfpm
+        - .env:/var/www/html/.env
+        - ./site:/var/www/html
+        - ./site/nginx-site.conf:/etc/nginx/conf.d/default.conf
+#      depends_on:
+#        - phpfpm
+      env_file:
+        - .env
 
-
-    phpfpm:
-        image: phalconphp/phpfpm-fpm
-        restart: always
-        working_dir: /var/www
-        ports:
-            - "8081:80"
-        volumes:
-            - ./site:/var/www/site
-            - ./users:/var/www/users
-#            - ./conf/phpfpm/fpm.ini://etc/phpfpm/7.0/fpm/phpfpm.ini
-        depends_on:
-            - users
-
-
-volumes:
-  users:
-    777driver: local
+# disabled, cause used   image: ngnix:apline
+#    phpfpm:
+#        image: phalconphp/phpfpm-fpm
+#        restart: always
+#        ports:
+#            - "8080:80"
+#        volumes:
+#            - ./site/public:/var/www/public
+##            - ./users/public:/var/www/public
+#            - ./phpconfig/php.ini://etc/phpfpm/7.2/fpm/phpfpm.ini
+#        depends_on:
+#            - site
+#        stdin_open: true
+#        tty: true
