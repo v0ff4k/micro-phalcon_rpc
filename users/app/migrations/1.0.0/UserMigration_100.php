@@ -2,7 +2,7 @@
 
 use Phalcon\Db\Column as Column;
 use Phalcon\Db\Index as Index;
-use Phalcon\Mvc\Model\Migration;
+use \Phalcon\Mvc\Model\Migration;
 
 class UserMigration_100 extends Migration
 {
@@ -46,6 +46,25 @@ class UserMigration_100 extends Migration
                             'after'   => 'login',
                         ]
                     ),
+                    new Column(
+                        'login_attempts',
+                        [
+                            'type'          => Column::TYPE_INTEGER,
+                            'size'          => 10,
+                            'unsigned'      => true,
+                            'notNull'       => false,
+                            'after'         => 'password',
+                        ]
+                    ),
+                    new Column(
+                        'created',
+                        [
+                            'type'          => Column::TYPE_DATETIME,
+                            'size'          => 10,
+                            'notNull'       => false,
+                            'after'         => 'login_attempts',
+                        ]
+                    ),
                 ],
                 'indexes' => [
                     new Index(
@@ -63,7 +82,7 @@ class UserMigration_100 extends Migration
             [
                 1,
                 'admin',
-                '21232f297a57a5a743894a0e4a801fc3',
+                \plugins\Password::make('admin'),
             ],
             [
                 'id',
