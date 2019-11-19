@@ -1,20 +1,33 @@
-Install Phalcon, Docker,
+
+TODO: make easer logic
+---------------------
+
+
+
+-----------------------
+  The task:
 -----------------------
 
 using phalcon micro
 create   ***site*** and ***user*** 
 
-> web root is   site/index.php 
+> web root is only  site/public/index.php 
+> backend with DB  is users/public/index.php 
 
 will help http://phalcondoc.p2hp.com/ru/3.1/application-micro
 
 Must be
 -------
-* Dockerfile
-* site accessed via post admin:admin
+* Dockerfile for each part
+
+* site - is web, frontend
+* site accessed via forms with POST  admin:admin
 * site  accessed via 80port
+* site send jsonRPC request to users
+
+* users - is closed, backend
 * users without external ports ports
-* user accessed only via json-rpc
+* user accessed only via jsonRPC
 
 
 CLi commands
