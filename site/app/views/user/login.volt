@@ -20,7 +20,6 @@
     <div class="row justify-content-md-center mt-2">
         <div class="col-6">
 
-            {#<form role="form" action="{{ app.link.authLogin() }}" novalidate="" method="post">#}
             {{ form('/login', 'method': 'post') }}{{ form.render('csrf', ['value': security.getToken()]) }}
                 <div class="card">
                     <div class="card-header">Auth</div>
