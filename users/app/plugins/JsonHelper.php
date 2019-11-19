@@ -4,7 +4,7 @@ namespace app\plugins;
 
 use Phalcon\Http\Response;
 
-class ResponseJson
+class JsonHelper
 {
 
     /**

@@ -2,8 +2,6 @@
 
 namespace App\Controllers;
 
-//use app\plugins\ResponseJson;
-
 class IndexController extends ControllerBase
 {
 

@@ -72,6 +72,6 @@ try {
         $content = 'There was an error processing your request';
     }
 
-    \app\plugins\ResponseJson::returnJsonRpcResponse($content, true, -32603, 1, 500);
+    \app\plugins\JsonHelper::returnJsonRpcResponse($content, true, -32603, 1, 500);
     die;
 }

@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use app\forms\LoginForm;
 use app\plugins\Logger;
-use app\plugins\ResponseJson;
+use app\plugins\JsonHelper;
 use \Phalcon\Http\Client\Request as ClientRequest;
 use Phalcon\Http\Client\Response as ClientResponse;
 use Phalcon\Http\Request;
@@ -101,7 +101,7 @@ class UserController extends ControllerBase
             'crypt' => $this->crypt->encryptBase64($this->security->hash($data->getPost('password')))
         ];
 
-        $jsonRpc = ResponseJson::simpleJsonRpcRequest('user/login', $jsonBody);
+        $jsonRpc = JsonHelper::simpleJsonRpcRequest('user/login', $jsonBody);
         /** @var ClientResponse $response */
         $response = $this->sendRequestToDbContainer($jsonRpc);
 
@@ -138,7 +138,7 @@ class UserController extends ControllerBase
         $result = json_decode((string)$response->body, true, 512);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            $humanized = ResponseJson::humanizeError(json_last_error());
+            $humanized = JsonHelper::humanizeError(json_last_error());
             (new Logger())->error('Error, convert to json return:' . $humanized);
             throw new \RuntimeException($humanized);
         }

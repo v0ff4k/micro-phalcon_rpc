@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use app\plugins\CustomEvaluator;
-use app\plugins\ResponseJson;
+use app\plugins\JsonHelper;
 use Datto\JsonRpc\Server;
 use Datto\JsonRpc\Client;
 
@@ -18,7 +18,7 @@ class IndexController extends ControllerBase
         if ($this->request->isGet()) {
             // default stub, like welcome string
             //return 'Welcome to jsonRPC API';
-            ResponseJson::returnJsonRpcResponse('Welcome to jsonRPC API');
+            JsonHelper::returnJsonRpcResponse('Welcome to jsonRPC API');
             die;
 
         } else {

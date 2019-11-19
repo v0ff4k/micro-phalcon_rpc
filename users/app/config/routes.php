@@ -35,7 +35,7 @@ $app->notFound(function () use ($app) {
     $app->response
         ->setStatusCode(404, "Not Found")
         ->setContentType('application/json', 'UTF-8')
-        ->setJsonContent(\app\plugins\ResponseJson::simpleJsonRpcResponse('URL Not found', true, -32601, true));
+        ->setJsonContent(\app\plugins\JsonHelper::simpleJsonRpcResponse('URL Not found', true, -32601, true));
 
     if (true !== $app->response->isSent()) {
         //do not send headers if headers already printed!

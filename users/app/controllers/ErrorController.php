@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use app\plugins\ResponseJson;
+use app\plugins\JsonHelper;
 
 class ErrorController extends ControllerBase
 {
@@ -14,7 +14,7 @@ class ErrorController extends ControllerBase
     {
         $this->log()->error('Got 404!');
 
-        ResponseJson::returnJsonRpcResponse([], true, -32601, 1, 404);
+        JsonHelper::returnJsonRpcResponse([], true, -32601, 1, 404);
         die();
     }
 
@@ -25,7 +25,7 @@ class ErrorController extends ControllerBase
     public function unhandledExceptionAction()
     {
         $this->log()->error('Got unhandledException');
-        ResponseJson::returnJsonRpcResponse([], true, -32601, 1, 500);
+        JsonHelper::returnJsonRpcResponse([], true, -32601, 1, 500);
         die();
     }
 
@@ -36,7 +36,7 @@ class ErrorController extends ControllerBase
     public function indexAction()
     {
         $this->log()->warning('WAT???');
-        ResponseJson::returnJsonRpcResponse(['message' => 'Unknown error'], true, -32601, 1, 404);
+        JsonHelper::returnJsonRpcResponse(['message' => 'Unknown error'], true, -32601, 1, 404);
         die();
     }
 
