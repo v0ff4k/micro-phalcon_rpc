@@ -101,7 +101,7 @@ class UserController extends ControllerBase
             'crypt' => $this->crypt->encryptBase64($this->security->hash($data->getPost('password')))
         ];
 
-        $jsonRpc = JsonHelper::simpleJsonRpcRequest('user/login', $jsonBody);
+        $jsonRpc = JsonHelper::rpcRequest('user/login', $jsonBody);
         /** @var ClientResponse $response */
         $response = $this->sendRequestToDbContainer($jsonRpc);
 

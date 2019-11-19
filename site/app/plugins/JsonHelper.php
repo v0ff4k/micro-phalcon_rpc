@@ -16,7 +16,7 @@ class JsonHelper
      * @param $statusCode
      * @return void
      */
-    public static function returnJson($status = true, $message = null, $dataArray = [], $statusCode)
+    public static function standResponse($status = true, $message = null, $dataArray = [], $statusCode)
     {
 
         if (method_exists($message, 'getMessage')) {
@@ -51,7 +51,7 @@ class JsonHelper
      * @param int $statusCode
      * @return string|array
      */
-    public static function simpleJsonRpcRequest(string $method, $params = [], $id = 1, $asArray = false)
+    public static function rpcRequest(string $method, $params = [], $id = 1, $asArray = false)
     {
         $data = [
             'jsonrpc' => "2.0",
@@ -74,12 +74,12 @@ class JsonHelper
      *
      * @param array|string $body
      * @param bool $isError
-     * @param int|mixed $code  see
+     * @param int|mixed $code  see http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php
      * @param int $id
      * @param bool $asArray
      * @return array|false|string
      */
-    public static function simpleJsonRpcResponse($body = [], $isError = false, $code = 0, $id = 1, $asArray = false)
+    public static function rpcResponse($body = [], $isError = false, $code = 0, $id = 1, $asArray = false)
     {
         $data = [
             'jsonrpc' => "2.0",
@@ -95,7 +95,7 @@ class JsonHelper
             }else{
                 //but if body empty return message as humanizeJsonError(-32700..-32000)
                 if(!$body) {
-                    $data['error']['message'] = self::humanizeJsonError($code);
+                    $data['error']['message'] = self::humanizeRpcError($code);
                     $data['error']['code'] = $code;
                 } else {
                     $data['error'] = $body;
@@ -122,12 +122,12 @@ class JsonHelper
      * @param int $statusCode
      * @return void|Response
      */
-    public static function returnJsonRpcRequest(string $method, $params = [], $id = 1, $statusCode = 200)
+    public static function returnRpcRequest(string $method, $params = [], $id = 1, $statusCode = 200)
     {
         $response = new Response();
         $response->setHeader("Content-Type", "application/json");
         $response->setStatusCode($statusCode);
-        $response->setJsonContent(self::simpleJsonRpcRequest($method, $params, $id, true));
+        $response->setJsonContent(self::rpcRequest($method, $params, $id, true));
 
         // '{"jsonrpc": "2.0","method": "user/login","params": {"login" : "admin","password" : "admin"},"id":1}'
         if (true !== $response->isSent()) {
@@ -145,7 +145,7 @@ class JsonHelper
      * @param int $httpStatusCode
      * @return void|Response
      */
-    public static function returnJsonRpcResponse($result = [], $isError = false, $code = 0, $id = 1, $httpStatusCode = 200)
+    public static function returnRpcResponse($result = [], $isError = false, $code = 0, $id = 1, $httpStatusCode = 200)
     {
         $response = new Response();
         $response->setHeader("Content-Type", "application/json");
@@ -155,7 +155,7 @@ class JsonHelper
 //            'result' => $result,
 //            'id' => (integer)$id
 //        ]);
-        $response->setJsonContent(self::simpleJsonRpcResponse($result, $isError, $code, $id, true));
+        $response->setJsonContent(self::rpcResponse($result, $isError, $code, $id, true));
 
         // '{"jsonrpc": "2.0","result": {"login" : "admin","token" : "blabla123"},"id":1}'
         if (true !== $response->isSent()) {
@@ -207,7 +207,7 @@ class JsonHelper
      * @param integer|mixed $code  Also can be integer, auto convert to negative and check
      * @return bool|string
      */
-    public static function humanizeJsonError($code)
+    public static function humanizeRpcError($code)
     {
         if($code >= 32000 || $code <= 32700) {
             $code = -$code;
@@ -242,5 +242,4 @@ class JsonHelper
 
         return $error;
     }
-
 }

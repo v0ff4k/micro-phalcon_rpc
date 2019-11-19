@@ -18,7 +18,7 @@ class IndexController extends ControllerBase
         if ($this->request->isGet()) {
             // default stub, like welcome string
             //return 'Welcome to jsonRPC API';
-            JsonHelper::returnJsonRpcResponse('Welcome to jsonRPC API');
+            JsonHelper::returnRpcResponse('Welcome to jsonRPC API');
             die;
 
         } else {
