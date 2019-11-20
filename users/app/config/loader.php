@@ -20,7 +20,9 @@ $dirs = [
 $namespaces = [
     'App\\Controllers' => $config->application->controllersDir,
     'App\\Models' => $config->application->modelsDir,
+    'App\\Plugins' => $config->application->pluginsDir,
     '\\UnitTest'=> realpath(__DIR__.'/../tests'),
+    'Phalcon' => realpath($config->application->modelsDir.'../../vendor/phalcon/incubator/Library/Phalcon/'),
 ];
 //end of configurable namespaces
 
