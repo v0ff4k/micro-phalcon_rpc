@@ -26,7 +26,7 @@ try {
      */
     include APP_PATH . '/config/loader.php';
 
-    $di = new FactoryDefault();
+    $di = new Phalcon\Di();
 
     /**
      * Include Services.
@@ -38,22 +38,47 @@ try {
      * Assign service locator to the application
      */
 //    $app = new Micro(); $app->setDI($di);
-    $app = new Micro($di);
+//    $app = new Micro($di);
 
     /**
      * Include routes.
+     * @todo all in services, on the fly from JsonRpc->method
      */
-    include APP_PATH . '/config/routes.php';
+//    include APP_PATH . '/config/routes.php';
 
-    /**
-     * Init the Session
-     */
-    $app->session->start();
+//    $request = $di->get('request');
+    $router = $di->get('router');
+    $router->handle();
+
+    $view = $di->getShared('view');
+
+    $dispatcher = $di->getShared('dispatcher');
+
+    $dispatcher->setControllerName($router->getControllerName());
+    $dispatcher->setActionName($router->getActionName());
+    $dispatcher->setParams($router->getParams());
+
+//    $view->start;
+//var_dump($dispatcher);die;
+    $dispatcher-> dispatch();
+//
+//    $view->render(
+//        $dispatcher->getControllerName(),
+//        $dispatcher->getActionName(),
+//        $dispatcher->getParams()
+//    );
+
+
+//    $response = $di->getShared('response');
+//    $response->setContent($view->getContent());
+//    $response->send();
+
+//    $app->session->start();
 
     /**
      * Handle the whole request
      */
-    $app->handle();
+//    $app->handle();
 
 } catch (Error | Exception $e) {
 
@@ -64,10 +89,11 @@ try {
 
     if (APP_ENV === 'dev') {
        $content = sprintf(
-            "message: %s, \n stacktrace: %s ",
+            "%s, stacktrace: %s ",
             $e->getMessage(),
             $e->getTraceAsString()
        );
+        $content = str_replace("\r\n","", $content);
     } else {
         $content = 'There was an error processing your request';
     }
