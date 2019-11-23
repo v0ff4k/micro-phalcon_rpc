@@ -2,31 +2,39 @@
 
 namespace App\Controllers;
 
-use app\plugins\CustomEvaluator;
 use app\plugins\JsonHelper;
-use Datto\JsonRpc\Server;
-use Datto\JsonRpc\Client;
 
 class IndexController extends ControllerBase
 {
 
     /**
      * Index action
+     * stub for test and for handling errors
      */
     public function indexAction()
     {
         if ($this->request->isGet()) {
+
             // default stub, like welcome string
             //return 'Welcome to jsonRPC API';
-            JsonHelper::returnRpcResponse('Welcome to jsonRPC API');
+            JsonHelper::returnRpcResponse('Welcome to GETjsonRPC API');
             die;
 
         } else {
-            // simple DattoServer with custom Evaluator
-            $api = new CustomEvaluator($this->dispatcher);
-            $server = new Server($api);
-
-            return $server->reply($this->request->getRawBody());
+            JsonHelper::returnRpcResponse('Welcome to POSTjsonRPC API');
+            die;
         }
+
+    }
+
+    /**
+     * Home action and test for request
+     * {"jsonrpc":"2.0","method":"index/home","params":"test","id":1}
+     */
+    public function HomeAction()
+    {
+
+        JsonHelper::returnRpcResponse('BooYa !');
+        die;
     }
 }
