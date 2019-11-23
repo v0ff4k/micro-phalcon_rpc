@@ -1,8 +1,5 @@
 <?php
 
-use Phalcon\Di\FactoryDefault;
-use Phalcon\Mvc\Micro;
-
 date_default_timezone_set('Asia/Bishkek');
 
 define('APP_ENV', getenv('APP_ENV') ?: 'dev');
@@ -34,22 +31,17 @@ try {
     include APP_PATH . '/config/services.php';
 
     /*
-     * Starting the application
-     * Assign service locator to the application
-     */
-//    $app = new Micro(); $app->setDI($di);
-//    $app = new Micro($di);
-
     /**
      * Include routes.
-     * @todo all in services, on the fly from JsonRpc->method
+     * all in services, on the fly from JsonRpc->method
      */
-//    include APP_PATH . '/config/routes.php';
-
-//    $request = $di->get('request');
     $router = $di->get('router');
     $router->handle();
 
+    /**
+     * Told to MVC that we have not both: view,render and content.
+     * So we work only what return by Response() from controller!
+     */
     $view = $di->getShared('view');
 
     $dispatcher = $di->getShared('dispatcher');
@@ -58,27 +50,10 @@ try {
     $dispatcher->setActionName($router->getActionName());
     $dispatcher->setParams($router->getParams());
 
-//    $view->start;
-//var_dump($dispatcher);die;
-    $dispatcher-> dispatch();
-//
-//    $view->render(
-//        $dispatcher->getControllerName(),
-//        $dispatcher->getActionName(),
-//        $dispatcher->getParams()
-//    );
-
-
-//    $response = $di->getShared('response');
-//    $response->setContent($view->getContent());
-//    $response->send();
-
-//    $app->session->start();
-
     /**
-     * Handle the whole request
+     * process
      */
-//    $app->handle();
+    $dispatcher-> dispatch();
 
 } catch (Error | Exception $e) {
 

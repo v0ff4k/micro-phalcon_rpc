@@ -1,20 +1,10 @@
 <?php
 
-use Phalcon\Mvc\Dispatcher;
-use Phalcon\Mvc\View\Simple as View;
-use Phalcon\Crypt;
-use Phalcon\Flash\Direct;
-use Phalcon\Mvc\Url as UrlResolver;
-use Phalcon\Session\Adapter\Files as AdapterFiles;
-use Phalcon\Logger\Adapter\File as FileAdapter;
-use Phalcon\Logger\Formatter\Line as LineFormatter;
-//use Phalcon\Http\Request as ClientRequest;
-
 /**
  * Register all available services
  * like services.yml ;)
  * @var Phalcon\Config $config
- * @var Phalcon\Di\FactoryDefault $di
+ * @var Phalcon\Di $di
  * @var Phalcon\Mvc\Micro $app
 
  */
@@ -53,7 +43,7 @@ if (APP_ENV === 'dev') {
  * The URL component, to support all urls in the Phalcon
  */
 $di->setShared('url', function () use ($config) {
-    $url = new UrlResolver();
+    $url = new Phalcon\Mvc\Url();
     $url->setBaseUri($config->application->baseUri);
     return $url;
 });
@@ -64,7 +54,7 @@ $di->setShared('url', function () use ($config) {
  */
 $di->set('crypt', function () use ($config) {
     $salt = $_ENV['SALT'] ?? '!@#$%^&*()_+!@#$%^&*()_+!@#$%^&*()_+' ;
-    return (new Crypt())->setKey($salt);
+    return (new Phalcon\Crypt())->setKey($salt);
 });
 
 
@@ -72,7 +62,7 @@ $di->set('crypt', function () use ($config) {
  * Session component from Session/Adapter/Files
  */
 $di->setShared('session', function () {
-        $session = new AdapterFiles();
+        $session = new Phalcon\Session\Adapter\Files();
         $session->start();
 
         return $session;
@@ -91,6 +81,39 @@ $di->setShared('db', function () {
 });
 
 
+$di->set('request', function () {
+    $request = new \app\plugins\JsonRpc\Request();
+
+    return $request;
+});
+
+//Router inject with  catch json body and send to proper controller/method
+$di->set('router', function () {
+
+    /** @var app\plugins\JsonRpc\Request $request */
+    $request = $this->get('request');
+    $router = new app\plugins\JsonRpc\Router($request->getRawBody());
+
+    return $router;
+});
+
+
+/**
+ * Reg jsonRpc Response
+ */
+$di->setShared('response', 'app\plugins\JsonRpc\Response');
+
+
+/**
+ * Disable any view output to client.
+ */
+$di->setShared('view', function () {
+    $view = new Phalcon\Mvc\View();
+    $view->disable();
+
+    return $view;
+});
+
 /**
  * Setting namespace of controllers
  *
@@ -98,28 +121,19 @@ $di->setShared('db', function () {
  * controller name, action name, and optional parameters contained in it, and then
  * instantiating a controller and calling an action of that controller.
  */
-//$di->set('dispatcher', function () {
-//
-//    $exceptionPlugin = new \app\plugins\ExceptionPlugin();
-//    $exceptionPlugin->setDI($this);
-//
-//    /** @var \Phalcon\Events\Manager $eventsManager */
-//    $eventsManager = $this->getEventsManager();
-//    $eventsManager->attach('dispatch', $exceptionPlugin);
-//
-//    $dispatcher = new Dispatcher();
-//    $dispatcher->setEventsManager($eventsManager);
-//    $dispatcher->setDefaultNamespace('App\Controllers');
-//
-//    return $dispatcher;
-//});
+$di->set('dispatcher', function () {
+
+    $exceptionPlugin = new \app\plugins\ExceptionPlugin();
+    $exceptionPlugin->setDI($this);
+
+    /** @var \Phalcon\Events\Manager $eventsManager */
+    $eventsManager = new \Phalcon\Events\Manager();
+    $eventsManager->attach('dispatch', $exceptionPlugin);
+
+    $dispatcher = new \Phalcon\Mvc\Dispatcher();
+    $dispatcher->setEventsManager($eventsManager);
+    $dispatcher->setDefaultNamespace('App\Controllers');
 
 
-/**
- * Register a ClientRequest from incubator/library
- *
- * @see vendor/phalcon/incubator/Library/Phalcon/Http/Client/README.md
- */
-//$di->set(ClientRequest::class, function () {
-//    return ClientRequest::getProvider();
-//});
+    return $dispatcher;
+});
