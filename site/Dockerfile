@@ -8,7 +8,8 @@ ENV PHP_VER=7.2 \
 
 RUN apt update && apt install -y \
     curl \
-    zip
+    zip \
+    && apt clean
 
 # Phalcon install
 RUN set -xe && \
